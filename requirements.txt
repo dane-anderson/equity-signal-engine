@@ -3,3 +3,4 @@ numpy
 yfinance==0.2.36
 scikit-learn
 streamlit
+pandas-datareader

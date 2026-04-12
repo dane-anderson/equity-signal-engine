@@ -1,4 +1,4 @@
-
+from pandas_datareader import data as pdr
 import pandas as pd
 import yfinance as yf
 import streamlit as st
@@ -14,11 +14,12 @@ st.write("Predict whether a stock may rise more than 1% over the next 5 trading 
 ticker = st.text_input("Enter a stock ticker", value="AAPL").strip().upper()
 
 
+
 @st.cache_data(ttl=3600)
 def load_stock_data(symbol: str) -> pd.DataFrame:
     symbol = symbol.strip().upper()
 
-    # Try yfinance download first
+    # Try Yahoo download first
     try:
         df = yf.download(
             symbol,
@@ -33,7 +34,7 @@ def load_stock_data(symbol: str) -> pd.DataFrame:
     except Exception:
         pass
 
-    # Fallback: Ticker.history
+    # Try Yahoo Ticker.history second
     try:
         stock = yf.Ticker(symbol)
         df = stock.history(period="5y", interval="1d", auto_adjust=False)
@@ -42,8 +43,17 @@ def load_stock_data(symbol: str) -> pd.DataFrame:
     except Exception:
         pass
 
-    return pd.DataFrame()
+    # Fallback to Stooq
+    try:
+        stooq_symbol = f"{symbol}.US"
+        df = pdr.DataReader(stooq_symbol, "stooq")
+        if df is not None and not df.empty:
+            df = df.sort_index()
+            return df
+    except Exception:
+        pass
 
+    return pd.DataFrame()
 
 if st.button("Run Prediction"):
     try:
