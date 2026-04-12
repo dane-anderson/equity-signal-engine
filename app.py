@@ -16,45 +16,35 @@ ticker = st.text_input("Enter a stock ticker", value="AAPL").strip().upper()
 
 @st.cache_data(ttl=3600)
 def load_stock_data(symbol: str) -> pd.DataFrame:
+    api_key = st.secrets["ALPHA_VANTAGE_API_KEY"]
     symbol = symbol.strip().upper()
 
-    # Try yfinance download
-    try:
-        df = yf.download(
-            symbol,
-            period="5y",
-            interval="1d",
-            auto_adjust=False,
-            progress=False,
-            threads=False,
-        )
-        if df is not None and not df.empty:
-            return df
-    except Exception:
-        pass
+    url = (
+        f"https://www.alphavantage.co/query?"
+        f"function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}&outputsize=full"
+    )
 
-    # Try yfinance Ticker.history
-    try:
-        stock = yf.Ticker(symbol)
-        df = stock.history(period="5y", interval="1d", auto_adjust=False)
-        if df is not None and not df.empty:
-            return df
-    except Exception:
-        pass
+    response = requests.get(url)
+    data = response.json()
 
-    # Fallback: Stooq direct CSV (no extra package)
-    try:
-        stooq_symbol = f"{symbol.lower()}.us"
-        url = f"https://stooq.com/q/d/l/?s={stooq_symbol}&i=d"
-        df = pd.read_csv(url)
-        if df is not None and not df.empty:
-            df["Date"] = pd.to_datetime(df["Date"])
-            df = df.set_index("Date").sort_index()
-            return df
-    except Exception:
-        pass
+    if "Time Series (Daily)" not in data:
+        return pd.DataFrame()
 
-    return pd.DataFrame()
+    df = pd.DataFrame.from_dict(data["Time Series (Daily)"], orient="index")
+
+    df = df.rename(columns={
+        "1. open": "Open",
+        "2. high": "High",
+        "3. low": "Low",
+        "4. close": "Close",
+        "5. volume": "Volume",
+    })
+
+    df.index = pd.to_datetime(df.index)
+    df = df.sort_index()
+    df = df.astype(float)
+
+    return df
 
 
 if st.button("Run Prediction"):
