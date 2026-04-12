@@ -1,19 +1,20 @@
+import os
 import pandas as pd
 import streamlit as st
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
-st.set_page_config(page_title="Stock Direction ML Model", layout="centered")
+st.set_page_config(page_title="Nasdaq-100 Stock Direction ML Model", layout="centered")
 
-st.title("📈 Stock Direction ML Model")
-st.write("Predict whether a stock may rise more than 1% over the next 5 trading days.")
+st.title("📈 Nasdaq-100 Stock Direction ML Model")
+st.write("Predict short-term price direction across a large-cap stock universe using historical data.")
 st.caption("Public demo uses bundled historical data for reliability.")
 
-ticker = st.selectbox(
-    "Choose a stock ticker",
-    ["AAPL", "MSFT", "NVDA", "TSLA", "SPY", "AMZN"],
-)
+available_files = os.listdir("data")
+tickers = sorted([f.replace(".csv", "") for f in available_files if f.endswith(".csv")])
+
+ticker = st.selectbox("Choose a stock ticker", tickers, index=tickers.index("AAPL") if "AAPL" in tickers else 0)
 
 
 @st.cache_data
