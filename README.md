@@ -3,7 +3,7 @@
 An ML-powered stock screening system that ranks large-cap equities by predicted short-term return probability.
 
 ## 🚀 Live App
-👉 https://YOUR-STREAMLIT-LINK
+👉 https://stock-direction-ml-model-cdrysyqq5qzoadhqry9e44.streamlit.app/
 
 ---
 
@@ -78,4 +78,4 @@ This project is for educational purposes only and does not constitute financial 
 
 ## 📸 Screenshot
 
-(Add a screenshot here)
+(Add a screenshot of your app here)
