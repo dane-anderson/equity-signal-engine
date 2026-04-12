@@ -42,115 +42,32 @@ def load_stock_data(symbol: str) -> pd.DataFrame:
 
 
 @st.cache_data
-def get_ranked_signals(ticker_list):
-    rows = []
-
-    for symbol in ticker_list:
-        try:
-            df = load_stock_data(symbol)
-
-            if df.empty:
-                continue
-
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-
-            if "Close" not in df.columns:
-                continue
-
-            df = df[["Close"]].copy()
-
-            df["Return_1d"] = df["Close"].pct_change()
-            df["MA_5"] = df["Close"].rolling(5).mean()
-            df["MA_10"] = df["Close"].rolling(10).mean()
-            df["Return_5d"] = df["Close"].pct_change(5)
-            df["MA_ratio"] = df["MA_5"] / df["MA_10"]
-            df["Volatility_5d"] = df["Return_1d"].rolling(5).std()
-            df["Momentum_3d"] = df["Close"] - df["Close"].shift(3)
-
-            df["Future_Close_5d"] = df["Close"].shift(-5)
-            df["Future_Return_5d"] = (df["Future_Close_5d"] - df["Close"]) / df["Close"]
-            df["Target"] = (df["Future_Return_5d"] > 0.01).astype(int)
-
-            df = df.dropna()
-
-            if df.empty or len(df) < 50:
-                continue
-
-            features = [
-                "Return_1d",
-                "Return_5d",
-                "MA_5",
-                "MA_10",
-                "MA_ratio",
-                "Volatility_5d",
-                "Momentum_3d",
-            ]
-
-            X = df[features]
-            y = df["Target"]
-
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, shuffle=False
-            )
-
-            model = RandomForestClassifier(
-                n_estimators=200,
-                max_depth=5,
-                random_state=42,
-                class_weight="balanced",
-            )
-            model.fit(X_train, y_train)
-
-            latest_features = X.iloc[[-1]]
-            probability = model.predict_proba(latest_features)[0][1]
-
-            rows.append(
-                {
-                    "Ticker": symbol,
-                    "Up Probability": probability,
-                }
-            )
-
-        except Exception:
-            continue
-
-    if not rows:
-        return pd.DataFrame(columns=["Ticker", "Up Probability", "Signal"])
-
-    ranked = (
-        pd.DataFrame(rows)
-        .sort_values("Up Probability", ascending=False)
-        .head(5)
-        .reset_index(drop=True)
-    )
-
-    def label(p):
-        if p > 0.65:
-            return "🔥 Strong"
-        elif p > 0.55:
-            return "📈 Bullish"
-        elif p > 0.45:
-            return "⚖️ Neutral"
-        else:
-            return "📉 Bearish"
-
-    ranked["Signal"] = ranked["Up Probability"].apply(label)
-    ranked["Up Probability"] = ranked["Up Probability"].map(lambda x: f"{x:.2%}")
-
-    return ranked
+def load_top_signals() -> pd.DataFrame:
+    path = f"{DATA_DIR}/top_signals.csv"
+    df = pd.read_csv(path)
+    return df
 
 
 st.markdown("---")
 st.subheader("🏆 Top 5 Stocks Right Now")
 st.caption("Ranked by predicted probability of >1% return over the next 5 trading days")
 
-top5 = get_ranked_signals(tickers)
+top5 = load_top_signals().head(5).copy()
 
-if top5.empty:
-    st.info("Top-ranked signals could not be generated.")
-else:
-    st.dataframe(top5, use_container_width=True, hide_index=True)
+def label_signal(p):
+    if p > 0.65:
+        return "🔥 Strong"
+    elif p > 0.55:
+        return "📈 Bullish"
+    elif p > 0.45:
+        return "⚖️ Neutral"
+    else:
+        return "📉 Bearish"
+
+top5["Signal"] = top5["Up Probability"].apply(label_signal)
+top5["Up Probability"] = top5["Up Probability"].map(lambda x: f"{x:.2%}")
+
+st.dataframe(top5, use_container_width=True, hide_index=True)
 
 st.markdown("---")
 st.subheader("📈 Model Output")
