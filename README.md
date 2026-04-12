@@ -79,4 +79,4 @@ This project is for educational purposes only and does not constitute financial 
 ## 📸 Screenshot
 
 <img width="847" height="651" alt="app-screenshot" src="https://github.com/user-attachments/assets/3816dbba-acb4-40df-91d5-00334010b871" />
-
+Top-ranked large-cap stocks by predicted short-term return probability, with model-generated signals and historical price visualization.
