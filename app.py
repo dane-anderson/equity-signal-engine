@@ -11,19 +11,49 @@ st.set_page_config(page_title="Stock Direction ML Model", layout="centered")
 st.title("📈 Stock Direction ML Model")
 st.write("Predict whether a stock may rise more than 1% over the next 5 trading days.")
 
-ticker = st.text_input("Enter a stock ticker", value="AAPL").upper()
+ticker = st.text_input("Enter a stock ticker", value="AAPL").strip().upper()
+
+
+@st.cache_data(ttl=3600)
+def load_stock_data(symbol: str) -> pd.DataFrame:
+    symbol = symbol.strip().upper()
+
+    # Try yfinance download first
+    try:
+        df = yf.download(
+            symbol,
+            period="5y",
+            interval="1d",
+            auto_adjust=False,
+            progress=False,
+            threads=False,
+        )
+        if df is not None and not df.empty:
+            return df
+    except Exception:
+        pass
+
+    # Fallback: Ticker.history
+    try:
+        stock = yf.Ticker(symbol)
+        df = stock.history(period="5y", interval="1d", auto_adjust=False)
+        if df is not None and not df.empty:
+            return df
+    except Exception:
+        pass
+
+    return pd.DataFrame()
+
 
 if st.button("Run Prediction"):
     try:
-        # Download stock data
-        stock = yf.Ticker(ticker)
-        df = stock.history(period="5y", auto_adjust=False)
+        df = load_stock_data(ticker)
 
         if df.empty:
-            st.error("No data returned. Try a common ticker like AAPL, MSFT, NVDA, TSLA, or SPY.")
+            st.error("Still no data returned. Try AAPL, MSFT, NVDA, TSLA, SPY, or AMZN.")
             st.stop()
 
-        # Show price chart
+        # Make chart work whether Close is Series or DataFrame
         close_for_chart = df["Close"]
         if isinstance(close_for_chart, pd.DataFrame):
             close_for_chart = close_for_chart.iloc[:, 0]
@@ -53,8 +83,8 @@ if st.button("Run Prediction"):
         # Clean data
         df = df.dropna()
 
-        if df.empty:
-            st.error("Not enough data after feature engineering.")
+        if df.empty or len(df) < 50:
+            st.error("Not enough usable data after feature engineering.")
             st.stop()
 
         # Features and target
