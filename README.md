@@ -1,47 +1,81 @@
-# 📈 Stock Direction ML Model
+# 📈 AI Equity Signal Engine
 
-This project builds a machine learning model to predict whether a stock’s price will increase over the next 5 days.
+An ML-powered stock screening system that ranks large-cap equities by predicted short-term return probability.
 
----
-
-## 🔍 Features Engineered
-
-- 1-day return
-- 5-day return
-- Moving averages (5-day, 10-day)
-- Moving average ratio (MA_5 / MA_10)
-- 5-day volatility
-- 3-day momentum
+## 🚀 Live App
+👉 https://YOUR-STREAMLIT-LINK
 
 ---
 
-## ⚙️ Models Used
+## 🧠 Overview
 
-- Logistic Regression (baseline)
-- Random Forest (improved performance)
+This project builds a machine learning pipeline that:
 
----
-
-## 📊 Results
-
-- Random Forest improved recall on upward movements
-- Class imbalance handled using `class_weight="balanced"`
-- Demonstrates importance of feature engineering in financial ML
+- Predicts whether a stock will rise >1% over the next 5 trading days
+- Generates probability-based signals across a large-cap universe
+- Ranks stocks to identify top opportunities
 
 ---
 
-## 🧠 Key Takeaways
-
-- Feature engineering is critical in financial prediction
-- Class imbalance can distort model performance if ignored
-- Tree-based models can outperform linear models on nonlinear signals
-
----
-
-## 🛠️ Tech Stack
+## ⚙️ Tech Stack
 
 - Python
 - Pandas
-- NumPy
-- scikit-learn
-- yfinance
+- Scikit-learn (Random Forest)
+- Streamlit
+
+---
+
+## 📊 Features
+
+- 📈 Stock-level prediction with probability output
+- 🏆 Top 5 ranked stocks by predicted return probability
+- 🧠 Feature engineering:
+  - Momentum
+  - Volatility
+  - Moving averages
+- ⚡ Fast UI using precomputed signals
+- 📉 Historical price visualization
+
+---
+
+## 🏗 Architecture
+
+- `build_sample_data.py`  
+  → Data pipeline + model inference across all tickers  
+  → Generates ranked signals (`top_signals.csv`)
+
+- `app.py`  
+  → Interactive Streamlit frontend  
+  → Displays rankings + runs live prediction per stock
+
+- `data/`  
+  → Historical stock data + precomputed signals
+
+---
+
+## ⚡ Performance Design
+
+To ensure fast load times:
+
+- Signals are precomputed offline
+- The app loads rankings instantly from disk
+- Avoids recomputing models in real time
+
+---
+
+## 🧠 Key Insight
+
+Separating computation from presentation dramatically improves performance and reliability in ML applications.
+
+---
+
+## ⚠️ Disclaimer
+
+This project is for educational purposes only and does not constitute financial advice.
+
+---
+
+## 📸 Screenshot
+
+(Add a screenshot here)
