@@ -1,4 +1,4 @@
-
+import requests
 import pandas as pd
 import yfinance as yf
 import streamlit as st
@@ -19,11 +19,7 @@ def load_stock_data(symbol: str) -> pd.DataFrame:
     api_key = st.secrets["ALPHA_VANTAGE_API_KEY"]
     symbol = symbol.strip().upper()
 
-    url = (
-        f"https://www.alphavantage.co/query?"
-        f"function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}&outputsize=full"
-    )
-
+   url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}&outputsize=full"
     response = requests.get(url)
     data = response.json()
 
