@@ -8,14 +8,26 @@ from sklearn.ensemble import RandomForestClassifier
 
 st.set_page_config(page_title="Stock Direction ML Model", layout="centered")
 
-st.title("📈 Stock Direction ML Model")
-st.write("Predict whether a stock may rise more than 1% over the next 5 trading days.")
-st.caption("Public demo uses bundled historical data for reliability.")
+st.title("📈 AI Stock Direction Screener")
+
+st.markdown("""
+Predict short-term stock direction across a large-cap equity universe using a machine learning model.
+
+Built with:
+- 🧠 Random Forest ML model  
+- 📊 Financial feature engineering  
+- ⚡ Streamlit interactive app  
+
+⚠️ Educational project — not financial advice
+""")
 
 # Load available tickers from data folder
 DATA_DIR = "data"
 files = [f.replace(".csv", "") for f in os.listdir(DATA_DIR) if f.endswith(".csv")]
 tickers = sorted(files)
+
+st.markdown("---")
+st.subheader("📊 Select Stock")
 
 ticker = st.selectbox("Choose a stock ticker", tickers)
 
@@ -24,9 +36,14 @@ def load_stock_data(symbol: str) -> pd.DataFrame:
     df = pd.read_csv(path, index_col=0, parse_dates=True)
     return df
 
+
+st.markdown("---")
+st.subheader("📈 Model Output")
+
 if st.button("Run Prediction"):
-    try:
-        df = load_stock_data(ticker)
+    with st.spinner("Running model..."):
+        try:
+            df = load_stock_data(ticker)
 
         if df.empty:
             st.error("No data found.")
@@ -87,20 +104,21 @@ if st.button("Run Prediction"):
         accuracy = model.score(X_test, y_test)
         st.metric("Model Accuracy", f"{accuracy:.2%}")
 
-        # ✅ Prediction
         latest_features = X.iloc[[-1]]
         prediction = model.predict(latest_features)[0]
         probability = model.predict_proba(latest_features)[0][1]
 
-        st.subheader(f"Results for {ticker}")
+        st.subheader(f"{ticker} Prediction")
 
-        if prediction == 1:
-            st.success(f"📈 Likely UP (>1%) with {probability:.2%} confidence")
-        else:
-            st.warning(f"📉 No strong upward move ({probability:.2%} confidence)")
+        col1, col2 = st.columns(2)
+
+        with col1:
+           st.metric("Prediction", "UP 📈" if prediction == 1 else "NO STRONG MOVE 📉") 
+
+        with col2:
+            st.metric("Confidence", f"{probability:.2%}")
 
         st.subheader("Latest Feature Values")
         st.dataframe(latest_features)
-
     except Exception as e:
         st.error(f"Something went wrong: {e}")
