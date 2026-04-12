@@ -1,6 +1,4 @@
-import requests
 import pandas as pd
-import yfinance as yf
 import streamlit as st
 
 from sklearn.model_selection import train_test_split
@@ -10,37 +8,18 @@ st.set_page_config(page_title="Stock Direction ML Model", layout="centered")
 
 st.title("📈 Stock Direction ML Model")
 st.write("Predict whether a stock may rise more than 1% over the next 5 trading days.")
+st.caption("Public demo uses bundled historical data for reliability.")
 
-ticker = st.text_input("Enter a stock ticker", value="AAPL").strip().upper()
+ticker = st.selectbox(
+    "Choose a stock ticker",
+    ["AAPL", "MSFT", "NVDA", "TSLA", "SPY", "AMZN"],
+)
 
 
-@st.cache_data(ttl=3600)
+@st.cache_data
 def load_stock_data(symbol: str) -> pd.DataFrame:
-    api_key = st.secrets["ALPHA_VANTAGE_API_KEY"]
-    symbol = symbol.strip().upper()
-
-    url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}&outputsize=full"
-
-    response = requests.get(url)
-    data = response.json()
-
-    if "Time Series (Daily)" not in data:
-        return pd.DataFrame()
-
-    df = pd.DataFrame.from_dict(data["Time Series (Daily)"], orient="index")
-
-    df = df.rename(columns={
-        "1. open": "Open",
-        "2. high": "High",
-        "3. low": "Low",
-        "4. close": "Close",
-        "5. volume": "Volume",
-    })
-
-    df.index = pd.to_datetime(df.index)
-    df = df.sort_index()
-    df = df.astype(float)
-
+    path = f"data/{symbol}.csv"
+    df = pd.read_csv(path, index_col=0, parse_dates=True)
     return df
 
 
@@ -49,17 +28,17 @@ if st.button("Run Prediction"):
         df = load_stock_data(ticker)
 
         if df.empty:
-            st.error("No data returned. Try AAPL, MSFT, NVDA, TSLA, SPY, or AMZN.")
+            st.error("No bundled data found for that ticker.")
             st.stop()
 
-        close_for_chart = df["Close"]
-        if isinstance(close_for_chart, pd.DataFrame):
-            close_for_chart = close_for_chart.iloc[:, 0]
-        st.line_chart(close_for_chart)
-
-        df = df.copy()
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
+
+        if "Close" not in df.columns:
+            st.error("Close column missing from data.")
+            st.stop()
+
+        st.line_chart(df["Close"])
 
         df = df[["Close"]].copy()
 
@@ -110,6 +89,7 @@ if st.button("Run Prediction"):
         probability = model.predict_proba(latest_features)[0][1]
 
         st.subheader(f"Results for {ticker}")
+
         if prediction == 1:
             st.success(f"📈 Likely UP (>1%) with {probability:.2%} confidence")
         else:
