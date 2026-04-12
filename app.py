@@ -5,9 +5,9 @@ import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
-st.set_page_config(page_title="AI-Powered Equity Direction Screener", layout="centered")
+st.set_page_config(page_title="AI Equity Signal Engine", layout="centered")
 
-st.title("📈 AI-Powered Equity Direction Screener")
+st.title("📈 AI Equity Signal Engine")
 
 st.markdown("""
 Predict short-term stock direction across a large-cap equity universe using a machine learning model.
@@ -27,7 +27,11 @@ DATA_DIR = "data"
 files = [f.replace(".csv", "") for f in os.listdir(DATA_DIR) if f.endswith(".csv")]
 tickers = sorted(files)
 
-ticker = st.selectbox("Choose a stock ticker", tickers)
+ticker = st.selectbox(
+    "Choose a stock ticker",
+    tickers,
+    index=tickers.index("AAPL") if "AAPL" in tickers else 0,
+)
 
 
 @st.cache_data
@@ -38,7 +42,7 @@ def load_stock_data(symbol: str) -> pd.DataFrame:
 
 
 @st.cache_data
-def get_ranked_signals(ticker_list: list[str]) -> pd.DataFrame:
+def get_ranked_signals(ticker_list):
     rows = []
 
     for symbol in ticker_list:
@@ -112,21 +116,41 @@ def get_ranked_signals(ticker_list: list[str]) -> pd.DataFrame:
             continue
 
     if not rows:
-        return pd.DataFrame(columns=["Ticker", "Up Probability"])
+        return pd.DataFrame(columns=["Ticker", "Up Probability", "Signal"])
 
-    ranked = pd.DataFrame(rows).sort_values("Up Probability", ascending=False).head(5)
+    ranked = (
+        pd.DataFrame(rows)
+        .sort_values("Up Probability", ascending=False)
+        .head(5)
+        .reset_index(drop=True)
+    )
+
+    def label(p):
+        if p > 0.65:
+            return "🔥 Strong"
+        elif p > 0.55:
+            return "📈 Bullish"
+        elif p > 0.45:
+            return "⚖️ Neutral"
+        else:
+            return "📉 Bearish"
+
+    ranked["Signal"] = ranked["Up Probability"].apply(label)
     ranked["Up Probability"] = ranked["Up Probability"].map(lambda x: f"{x:.2%}")
+
     return ranked
 
 
 st.markdown("---")
 st.subheader("🏆 Top 5 Stocks Right Now")
+st.caption("Ranked by predicted probability of >1% return over the next 5 trading days")
+
 top5 = get_ranked_signals(tickers)
 
 if top5.empty:
     st.info("Top-ranked signals could not be generated.")
 else:
-    st.dataframe(top5, use_container_width=True)
+    st.dataframe(top5, use_container_width=True, hide_index=True)
 
 st.markdown("---")
 st.subheader("📈 Model Output")
@@ -198,7 +222,6 @@ if st.button("Run Prediction"):
             model.fit(X_train, y_train)
 
             accuracy = model.score(X_test, y_test)
-
             latest_features = X.iloc[[-1]]
             prediction = model.predict(latest_features)[0]
             probability = model.predict_proba(latest_features)[0][1]
