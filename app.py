@@ -16,7 +16,8 @@ ticker = st.text_input("Enter a stock ticker", value="AAPL").upper()
 if st.button("Run Prediction"):
     try:
         # Download stock data
-        df = yf.download(ticker, period="5y", auto_adjust=False, progress=False)
+        stock = yf.Ticker(ticker)
+        df = stock.history(period="5y", auto_adjust=False)
 
         if df.empty:
             st.error("No data returned. Try a common ticker like AAPL, MSFT, NVDA, TSLA, or SPY.")
