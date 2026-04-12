@@ -1,47 +1,43 @@
-import os
+
 import pandas as pd
 import streamlit as st
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
-st.set_page_config(page_title="Nasdaq-100 Stock Direction ML Model", layout="centered")
+st.set_page_config(page_title="Stock Direction ML Model", layout="centered")
 
-st.title("📈 Nasdaq-100 Stock Direction ML Model")
-st.write("Predict short-term price direction across a large-cap stock universe using historical data.")
+st.title("📈 Stock Direction ML Model")
+st.write("Predict whether a stock may rise more than 1% over the next 5 trading days.")
 st.caption("Public demo uses bundled historical data for reliability.")
 
-available_files = os.listdir("data")
-tickers = sorted([f.replace(".csv", "") for f in available_files if f.endswith(".csv")])
+# Load available tickers from data folder
+DATA_DIR = "data"
+files = [f.replace(".csv", "") for f in os.listdir(DATA_DIR) if f.endswith(".csv")]
+tickers = sorted(files)
 
-ticker = st.selectbox("Choose a stock ticker", tickers, index=tickers.index("AAPL") if "AAPL" in tickers else 0)
+ticker = st.selectbox("Choose a stock ticker", tickers)
 
-
-@st.cache_data
 def load_stock_data(symbol: str) -> pd.DataFrame:
-    path = f"data/{symbol}.csv"
+    path = f"{DATA_DIR}/{symbol}.csv"
     df = pd.read_csv(path, index_col=0, parse_dates=True)
     return df
-
 
 if st.button("Run Prediction"):
     try:
         df = load_stock_data(ticker)
 
         if df.empty:
-            st.error("No bundled data found for that ticker.")
+            st.error("No data found.")
             st.stop()
 
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.get_level_values(0)
-
-        if "Close" not in df.columns:
-            st.error("Close column missing from data.")
-            st.stop()
-
+        # Show chart
         st.line_chart(df["Close"])
 
-        df = df[["Close"]].copy()
+        # Feature engineering
+        df = df.copy()
+        df = df[["Close"]]
 
         df["Return_1d"] = df["Close"].pct_change()
         df["MA_5"] = df["Close"].rolling(5).mean()
@@ -58,7 +54,7 @@ if st.button("Run Prediction"):
         df = df.dropna()
 
         if df.empty or len(df) < 50:
-            st.error("Not enough usable data after feature engineering.")
+            st.error("Not enough usable data.")
             st.stop()
 
         features = [
@@ -70,6 +66,7 @@ if st.button("Run Prediction"):
             "Volatility_5d",
             "Momentum_3d",
         ]
+
         X = df[features]
         y = df["Target"]
 
@@ -83,8 +80,14 @@ if st.button("Run Prediction"):
             random_state=42,
             class_weight="balanced",
         )
+
         model.fit(X_train, y_train)
 
+        # ✅ Accuracy
+        accuracy = model.score(X_test, y_test)
+        st.metric("Model Accuracy", f"{accuracy:.2%}")
+
+        # ✅ Prediction
         latest_features = X.iloc[[-1]]
         prediction = model.predict(latest_features)[0]
         probability = model.predict_proba(latest_features)[0][1]
@@ -94,7 +97,7 @@ if st.button("Run Prediction"):
         if prediction == 1:
             st.success(f"📈 Likely UP (>1%) with {probability:.2%} confidence")
         else:
-            st.warning(f"📉 No strong upward move predicted ({probability:.2%} confidence)")
+            st.warning(f"📉 No strong upward move ({probability:.2%} confidence)")
 
         st.subheader("Latest Feature Values")
         st.dataframe(latest_features)
