@@ -78,4 +78,5 @@ This project is for educational purposes only and does not constitute financial 
 
 ## 📸 Screenshot
 
-(Add a screenshot of your app here)
+<img width="847" height="651" alt="app-screenshot" src="https://github.com/user-attachments/assets/3816dbba-acb4-40df-91d5-00334010b871" />
+
