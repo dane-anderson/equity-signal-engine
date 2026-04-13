@@ -90,7 +90,7 @@ Initially, this app fetched live market data and computed signals on each user r
 
 To improve performance and create a better user experience, the system was redesigned to precompute signals and serve them instantly from stored results.
 
-This tradeoff prioritizes speed and responsiveness over fully real-time computation, resulting in a significantly smoother user experience.
+This tradeoff prioritizes speed and responsiveness over fully real-time computation, significantly improving user experience.
 
 ---
 
