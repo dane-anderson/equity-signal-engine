@@ -81,3 +81,24 @@ This project is for educational purposes only and does not constitute financial 
 <img width="847" height="651" alt="app-screenshot" src="https://github.com/user-attachments/assets/3816dbba-acb4-40df-91d5-00334010b871" />
 
 Top-ranked large-cap stocks by predicted short-term return probability, with model-generated signals and historical price visualization.
+
+## 🧠 Design Decisions
+
+### Live vs Precomputed Data
+
+Initially, this app fetched live market data and computed signals on each user request. While this approach ensured up-to-date results, it introduced noticeable latency due to API calls and feature computation.
+
+To improve performance and create a better user experience, the system was redesigned to precompute signals and serve them instantly from stored results.
+
+This tradeoff prioritizes speed and responsiveness over fully real-time computation, resulting in a significantly smoother user experience.
+
+---
+
+## ⚡ System Architecture
+
+The application is structured in two main parts:
+
+- **Data Pipeline:** Fetches market data, computes features, and generates model signals  
+- **Application Layer:** Loads precomputed results and displays them instantly to the user  
+
+This separation allows the app to remain fast while still incorporating complex data processing behind the scenes.
