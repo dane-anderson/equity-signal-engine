@@ -1,72 +1,94 @@
+
 # 📈 AI Equity Signal Engine
 
-An ML-powered stock screening system that ranks large-cap equities by predicted short-term return probability.
+ML-powered stock screening system that ranks large-cap equities by predicted short-term return probability.
+
+---
 
 ## 🚀 Live App
+
 👉 https://stock-direction-ml-model-cdrysyqq5qzoadhqry9e44.streamlit.app/
+
+---
+
+## 🧠 What It Does
+
+This project uses machine learning to predict whether a stock will increase by more than 1% over the next 5 trading days and ranks stocks based on predicted probability.
 
 ---
 
 ## 🧠 Overview
 
-This project builds a machine learning pipeline that:
+The system builds a complete pipeline that:
 
-- Predicts whether a stock will rise >1% over the next 5 trading days
-- Generates probability-based signals across a large-cap universe
-- Ranks stocks to identify top opportunities
+- Processes historical stock data  
+- Engineers predictive features  
+- Applies a machine learning model  
+- Generates probability-based signals  
+- Ranks stocks to identify top opportunities  
 
----
-
-## ⚙️ Tech Stack
-
-- Python
-- Pandas
-- Scikit-learn (Random Forest)
-- Streamlit
+This project demonstrates how ML models can be integrated into real-world decision systems.
 
 ---
 
-## 📊 Features
+## ✨ Features
 
-- 📈 Stock-level prediction with probability output
-- 🏆 Top 5 ranked stocks by predicted return probability
+- 📈 Stock-level prediction with probability output  
+- 🏆 Top 5 ranked stocks by predicted return probability  
 - 🧠 Feature engineering:
-  - Momentum
-  - Volatility
-  - Moving averages
-- ⚡ Fast UI using precomputed signals
-- 📉 Historical price visualization
+  - Momentum  
+  - Volatility  
+  - Moving averages  
+- ⚡ Fast UI powered by precomputed signals  
+- 📉 Historical price visualization  
 
 ---
 
 ## 🏗 Architecture
 
-- `build_sample_data.py`  
-  → Data pipeline + model inference across all tickers  
-  → Generates ranked signals (`top_signals.csv`)
+**Data Pipeline (`build_sample_data.py`)**
+- Fetches market data  
+- Computes features  
+- Runs model inference  
+- Generates ranked signals (`top_signals.csv`)  
 
-- `app.py`  
-  → Interactive Streamlit frontend  
-  → Displays rankings + runs live prediction per stock
-
-- `data/`  
-  → Historical stock data + precomputed signals
+**Application Layer (`app.py`)**
+- Streamlit frontend  
+- Loads precomputed signals instantly  
+- Displays rankings and stock-level predictions  
 
 ---
 
 ## ⚡ Performance Design
 
-To ensure fast load times:
+To ensure fast performance:
 
-- Signals are precomputed offline
-- The app loads rankings instantly from disk
-- Avoids recomputing models in real time
+- Signals are precomputed offline  
+- The app loads results instantly from disk  
+- Avoids recomputing models on every request  
+
+This separation of computation and presentation improves both speed and reliability.
 
 ---
 
-## 🧠 Key Insight
+## 🛠 Tech Stack
 
-Separating computation from presentation dramatically improves performance and reliability in ML applications.
+- Python  
+- Pandas  
+- Scikit-learn (Random Forest)  
+- Streamlit  
+
+---
+
+## 📊 Example Output
+
+Top-ranked large-cap stocks by predicted short-term return probability, with model-generated signals and historical price visualization.
+
+---
+
+## 💡 Key Insight
+
+Separating heavy computation from the user interface significantly improves performance in real-world ML applications.
 
 ---
 
@@ -76,29 +98,15 @@ This project is for educational purposes only and does not constitute financial 
 
 ---
 
-## 📸 Screenshot
+## 🚀 Future Improvements
 
-<img width="847" height="651" alt="app-screenshot" src="https://github.com/user-attachments/assets/3816dbba-acb4-40df-91d5-00334010b871" />
-
-Top-ranked large-cap stocks by predicted short-term return probability, with model-generated signals and historical price visualization.
-
-## 🧠 Design Decisions
-
-### Live vs Precomputed Data
-
-Initially, this app fetched live market data and computed signals on each user request. While this approach ensured up-to-date results, it introduced noticeable latency due to API calls and feature computation.
-
-To improve performance and create a better user experience, the system was redesigned to precompute signals and serve them instantly from stored results.
-
-This tradeoff prioritizes speed and responsiveness over fully real-time computation, significantly improving user experience.
+- Expand model features and improve accuracy  
+- Add real-time data integration  
+- Introduce portfolio-level optimization  
+- Build a more advanced interactive dashboard  
 
 ---
 
-## ⚡ System Architecture
+## 💡 Vision
 
-The application is structured in two main parts:
-
-- **Data Pipeline:** Fetches market data, computes features, and generates model signals  
-- **Application Layer:** Loads precomputed results and displays them instantly to the user  
-
-This separation allows the app to remain fast while still incorporating complex data processing behind the scenes.
+This project represents a step toward building intelligent financial systems that combine data, machine learning, and usability to support better decision-making.
