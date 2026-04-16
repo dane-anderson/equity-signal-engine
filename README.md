@@ -29,6 +29,11 @@ The system builds a complete pipeline that:
 
 This project demonstrates how ML models can be integrated into real-world decision systems.
 
+## 📸 App Preview
+
+![Equity Signal Engine](app-screenshot.png)
+
+*Live ML-powered stock screening app showing ranked signals, probability outputs, and price visualization.*
 ---
 
 ## ✨ Features
